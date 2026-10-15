@@ -28,12 +28,6 @@ analyzer:
     - "**/*.pbenum.dart"
     - "**/*.pbjson.dart"
     - "**/*.pbserver.dart"
-    - build/**
-    - android/**
-    - ios/**
-    - windows/**
-    - macos/**
-    - linux/**
     # - 'web/*.dart'
 
 linter:

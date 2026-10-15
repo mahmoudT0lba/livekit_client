@@ -374,32 +374,30 @@ class LocalParticipant extends Participant<LocalTrackPublication> {
     logger.fine('Video layers: ${layers.map((e) => e)}');
 
     Future<lk_models.TrackInfo> negotiate() async {
-      // Local patch (vibe_zo): capture the non-null options before the first
-      // await. Dart 3.13 no longer promotes `publishOptions` across awaits.
-      final VideoPublishOptions negotiatedOptions = publishOptions!;
-      track.transceiver = await room.engine.createTransceiverRTCRtpSender(track, negotiatedOptions, encodings);
+      final resolvedPublishOptions = publishOptions!;
+      track.transceiver = await room.engine.createTransceiverRTCRtpSender(track, resolvedPublishOptions, encodings);
 
-      track.codec = negotiatedOptions.videoCodec;
+      track.codec = resolvedPublishOptions.videoCodec;
       if (lkBrowser() != BrowserType.firefox) {
         await room.engine.setPreferredCodec(
           track.transceiver!,
           'video',
-          negotiatedOptions.videoCodec,
+          resolvedPublishOptions.videoCodec,
         );
       }
 
       if ([TrackSource.camera, TrackSource.screenShareVideo].contains(track.source)) {
-        final degradationPreference = negotiatedOptions.degradationPreference ?? DegradationPreference.maintainResolution;
+        final degradationPreference = resolvedPublishOptions.degradationPreference ?? DegradationPreference.maintainResolution;
         await track.setDegradationPreference(degradationPreference);
       }
 
       if (kIsWeb && lkBrowser() == BrowserType.firefox && track.kind == TrackType.AUDIO) {
         //TOOD:
-      } else if (isSVCCodec(negotiatedOptions.videoCodec) && encodings?.first.maxBitrate != null) {
+      } else if (isSVCCodec(resolvedPublishOptions.videoCodec) && encodings?.first.maxBitrate != null) {
         room.engine.publisher?.setTrackBitrateInfo(TrackBitrateInfo(
             cid: track.getCid(),
             transceiver: track.transceiver,
-            codec: negotiatedOptions.videoCodec,
+            codec: resolvedPublishOptions.videoCodec,
             maxbr: encodings![0].maxBitrate! ~/ 1000));
       }
 
